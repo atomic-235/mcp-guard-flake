@@ -43,8 +43,9 @@ mcp-guard --server ai -- with-nono ai venice-mcp
 | `--policy FILE` | Policy file; defaults to `$XDG_CONFIG_HOME/opencode/mcp-guard/<server>.json` |
 | `--audit FILE` | Audit log; defaults to `$XDG_STATE_HOME/mcp-guard/audit.jsonl` |
 
-A missing policy file is a configuration error (exit 78) rather than a silent
-pass-through.
+A missing or unreadable policy logs a warning on stderr and relays unguarded,
+so a missing file never blocks the client. The gateway is a preference filter;
+the security boundary stays in the sandbox and credential layer.
 
 ## Policy
 

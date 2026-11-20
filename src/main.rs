@@ -61,15 +61,20 @@ fn run() -> i32 {
 
     let server = server.unwrap_or_else(|| "mcp".to_owned());
     let policy_path = policy_path.or_else(|| default_policy_path(&server));
-    let Some(policy_path) = policy_path else {
-        eprintln!("mcp-guard: no --policy and no $XDG_CONFIG_HOME to read one from");
-        return 78;
-    };
-    let policy = match Policy::load(&policy_path) {
-        Ok(policy) => policy,
-        Err(error) => {
-            eprintln!("mcp-guard: {error}");
-            return 78;
+    // A missing or unreadable policy must never take the client down with it:
+    // warn and relay unguarded. The gateway is a preference filter, not the
+    // security boundary.
+    let policy = match policy_path {
+        Some(path) => match Policy::load(&path) {
+            Ok(policy) => policy,
+            Err(error) => {
+                eprintln!("mcp-guard: {error}; running unguarded");
+                Policy::default()
+            }
+        },
+        None => {
+            eprintln!("mcp-guard: no policy path; running unguarded");
+            Policy::default()
         }
     };
 
