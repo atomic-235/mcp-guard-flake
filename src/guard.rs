@@ -240,14 +240,20 @@ impl Guard {
             .duration_since(std::time::UNIX_EPOCH)
             .map(|elapsed| elapsed.as_secs())
             .unwrap_or_default();
-        let line = json!({
+        // One buffer, one append: several guard processes share this file, and
+        // formatting a Value straight to the file emits many small writes that
+        // interleave with each other.
+        let mut line = json!({
             "ts": ts,
             "server": self.server,
             "method": method,
             "name": name,
             "decision": decision,
-        });
-        let _ = writeln!(file, "{line}");
+        })
+        .to_string();
+        line.push('\n');
+        let _ = file.write_all(line.as_bytes());
+        let _ = file.flush();
     }
 }
 

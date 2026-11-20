@@ -2,7 +2,7 @@
 //! the surface named by its policy, and that refuses blocked names by value
 //! without forwarding the request.
 
-use mcp_guard::{Client, Guard, Policy};
+use mcp_guard::{Client, Guard};
 
 fn guard(json: &str) -> Guard {
     Guard::new(serde_json::from_str(json).expect("policy parses"))
